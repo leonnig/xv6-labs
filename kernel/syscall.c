@@ -130,16 +130,16 @@ static uint64 (*syscalls[])(void) = {
 [SYS_trace]   sys_trace,
 };
 
+static char *arr[23] = {"0", "fork", "exit", "wait", "pipe", "read",
+                  "kill", "exec", "fstat", "chdir", "dup", "getpid",
+                  "sbrk", "sleep", "uptime", "open", "write", "mknod",
+                  "unlink", "link", "mkdir", "close", "trace"};
+
 void
 syscall(void)
 {
   int num;
   struct proc *p = myproc();
-
-  char *arr[23] = {"0", "fork", "exit", "wait", "pipe", "read",
-                  "kill", "exec", "fstat", "chdir", "dup", "getpid",
-                  "sbrk", "sleep", "uptime", "open", "write", "mknod",
-                  "unlink", "link", "mkdir", "close", "trace"};
 
   num = p->trapframe->a7;
   if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
