@@ -69,12 +69,40 @@ sys_sleep(void)
   return 0;
 }
 
-
+#define LAB_PGTBL 1
 #ifdef LAB_PGTBL
 int
 sys_pgaccess(void)
 {
-  // lab pgtbl: your code here.
+  uint64 vaddr;
+  uint64 abits;
+  int page_num;
+  argaddr(0, &vaddr);
+  argint(1, &page_num);
+  argaddr(2, &abits);
+  if (page_num > 64 || page_num < 0)
+    return -1;
+  struct proc *p = myproc();
+  pagetable_t pgtbl = p->pagetable;
+  uint64 res = 0;
+  
+  for (int i = 0; i < page_num; i++) {
+    if (vaddr+i*PGSIZE >= MAXVA)
+      return -1;
+    pte_t *pte = walk(pgtbl, vaddr+i*PGSIZE, 0);
+    if (!pte)
+      continue;
+    if ((*pte & PTE_V) == 0)
+      continue;
+    if ((*pte & PTE_U) == 0)
+      continue;
+    if (*pte & PTE_A) {
+      res |= (1L << i);
+      *pte &= ~PTE_A; //clear PTE_A
+    }
+  }
+  if(copyout(p->pagetable, abits, (char *)&res, (page_num + 8 - 1)/8) < 0)
+    return -1;
   return 0;
 }
 #endif
